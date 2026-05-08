@@ -8,15 +8,18 @@ I designed and deployed a production-ready CI/CD environment on AWS. My goal was
 
 ## Architecture
 
-![Architecture](Architecture.png)
-* **Infrastructure:** Used **Terraform** to build a custom VPC with public and private subnets.
-* **CI/CD:** Set up a **Jenkins** server on EC2 to orchestrate the pipeline.
+* **Infrastructure:** I used **Terraform** to build a custom VPC with public and private subnets.
+* **CI/CD:** I set up a **Jenkins** server on EC2 to orchestrate the pipeline.
 * **Containerization:** The PHP application is containerized using **Docker** and stored in **Amazon ECR**.
-* **Deployment:** Used **AWS SSM (Systems Manager)** to deploy the container to the application server.
+* **Deployment:** I used **AWS SSM (Systems Manager)** to deploy the container to the application server.
+
+---
 
 ## Architectural Diagram
 
+![Architecture](Architecture.png)
 
+---
 
 ## Design Decisions:
 

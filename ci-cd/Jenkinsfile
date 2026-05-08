@@ -31,7 +31,6 @@ pipeline {
         
         stage('Push to AWS ECR') {
             steps {
-                // Using standard shell commands to leverage the EC2 IAM Role
                 sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
                 sh "docker tag ${IMAGE_REPO}:${GIT_COMMIT} ${ECR_URL}:${GIT_COMMIT}"
                 sh "docker tag ${IMAGE_REPO}:${GIT_COMMIT} ${ECR_URL}:latest"
@@ -43,11 +42,11 @@ pipeline {
         stage('Deploy to App EC2 (via SSM)') {
             steps {
                 script {
-                    // Dynamically fetch the Instance ID of the server tagged 'application'
-                    def INSTANCE_ID = sh(script: "aws ec2 describe-instances --region ${AWS_REGION} --filters 'Name=tag:Name,Values=application' 'Name=instance-state-name,Values=running' --query 'Reservations[0].Instances[0].InstanceId' --output text", returnStdout: true).trim()
+                    // Filter updated to 'web-app' to match your instance tags
+                    def INSTANCE_ID = sh(script: "aws ec2 describe-instances --region ${AWS_REGION} --filters 'Name=tag:Name,Values=web-app' 'Name=instance-state-name,Values=running' --query 'Reservations[0].Instances[0].InstanceId' --output text", returnStdout: true).trim()
 
                     if (INSTANCE_ID == "None" || INSTANCE_ID == "") {
-                        error "No running instance found with tag Name=application"
+                        error "No running instance found with tag Name=web-app"
                     }
 
                     sh """
