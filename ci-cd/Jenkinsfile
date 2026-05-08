@@ -31,40 +31,38 @@ pipeline {
         
         stage('Push to AWS ECR') {
             steps {
-                withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
-                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-                    sh "docker tag ${IMAGE_REPO}:${GIT_COMMIT} ${ECR_URL}:${GIT_COMMIT}"
-                    sh "docker tag ${IMAGE_REPO}:${GIT_COMMIT} ${ECR_URL}:latest"
-                    sh "docker push ${ECR_URL}:${GIT_COMMIT}"
-                    sh "docker push ${ECR_URL}:latest"
-                }
+                // Using standard shell commands to leverage the EC2 IAM Role
+                sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                sh "docker tag ${IMAGE_REPO}:${GIT_COMMIT} ${ECR_URL}:${GIT_COMMIT}"
+                sh "docker tag ${IMAGE_REPO}:${GIT_COMMIT} ${ECR_URL}:latest"
+                sh "docker push ${ECR_URL}:${GIT_COMMIT}"
+                sh "docker push ${ECR_URL}:latest"
             }
         }
         
         stage('Deploy to App EC2 (via SSM)') {
             steps {
                 script {
-                    withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
-                        def INSTANCE_ID = sh(script: "aws ec2 describe-instances --region ${AWS_REGION} --filters 'Name=tag:Name,Values=application' 'Name=instance-state-name,Values=running' --query 'Reservations[0].Instances[0].InstanceId' --output text", returnStdout: true).trim()
+                    // Dynamically fetch the Instance ID of the server tagged 'application'
+                    def INSTANCE_ID = sh(script: "aws ec2 describe-instances --region ${AWS_REGION} --filters 'Name=tag:Name,Values=application' 'Name=instance-state-name,Values=running' --query 'Reservations[0].Instances[0].InstanceId' --output text", returnStdout: true).trim()
 
-                        if (!INSTANCE_ID || INSTANCE_ID == "None") {
-                            error "No running instance found with tag Name=application"
-                        }
-
-                        sh """
-                        aws ssm send-command \
-                            --region ${AWS_REGION} \
-                            --instance-ids "${INSTANCE_ID}" \
-                            --document-name "AWS-RunShellScript" \
-                            --parameters 'commands=[
-                                "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com",
-                                "docker pull ${ECR_URL}:latest",
-                                "docker stop php-ecommerce-app || true",
-                                "docker rm php-ecommerce-app || true",
-                                "docker run -d --name php-ecommerce-app -p 80:80 ${ECR_URL}:latest"
-                            ]'
-                        """
+                    if (INSTANCE_ID == "None" || INSTANCE_ID == "") {
+                        error "No running instance found with tag Name=application"
                     }
+
+                    sh """
+                    aws ssm send-command \
+                        --region ${AWS_REGION} \
+                        --instance-ids "${INSTANCE_ID}" \
+                        --document-name "AWS-RunShellScript" \
+                        --parameters 'commands=[
+                            "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com",
+                            "docker pull ${ECR_URL}:latest",
+                            "docker stop php-ecommerce-app || true",
+                            "docker rm php-ecommerce-app || true",
+                            "docker run -d --name php-ecommerce-app -p 80:80 ${ECR_URL}:latest"
+                        ]'
+                    """
                 }
             }
         }
@@ -75,10 +73,10 @@ pipeline {
             sh "docker system prune -af"
         }
         failure {
-            echo "Pipeline failed!"
+            echo "Pipeline failed! Check the console output above."
         }
         success {
-            echo "Deployment successful!"
+            echo "Deployment successful! Your app should be live shortly."
         }
     } 
-} 
+}
