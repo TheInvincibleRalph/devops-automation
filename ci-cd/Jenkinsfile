@@ -15,7 +15,7 @@ pipeline {
             }
         }
         */
-        
+
         stage('Docker Build') {
             steps {
                 sh "docker build -t ${IMAGE_REPO}:${GIT_COMMIT} ./app"
@@ -84,4 +84,3 @@ pipeline {
             echo "Deployment successful!"
         }
     }
-}
