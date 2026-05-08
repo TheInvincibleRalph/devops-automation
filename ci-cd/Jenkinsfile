@@ -42,7 +42,6 @@ pipeline {
         stage('Deploy to App EC2 (via SSM)') {
             steps {
                 script {
-                    // Filter updated to 'web-app' to match your instance tags
                     def INSTANCE_ID = sh(script: "aws ec2 describe-instances --region ${AWS_REGION} --filters 'Name=tag:Name,Values=web-app' 'Name=instance-state-name,Values=running' --query 'Reservations[0].Instances[0].InstanceId' --output text", returnStdout: true).trim()
 
                     if (INSTANCE_ID == "None" || INSTANCE_ID == "") {
