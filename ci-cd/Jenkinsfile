@@ -19,7 +19,7 @@ pipeline {
                 sh "docker build -t ${IMAGE_REPO}:${GIT_COMMIT} ./app"
             }
         }
-        
+        # stage
         stage('Security Scan') {
             steps {
                 sh "trivy image --severity HIGH,CRITICAL ${IMAGE_REPO}:${GIT_COMMIT}"
