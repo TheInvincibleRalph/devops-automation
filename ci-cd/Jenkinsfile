@@ -19,7 +19,7 @@ pipeline {
         
         stage('Docker Build') {
             steps {
-                sh "docker build --pull -t ${IMAGE_REPO}:${GIT_COMMIT} ./app"
+                sh "docker build --pull -f ./app/docker/application/Dockerfile -t ${IMAGE_REPO}:${GIT_COMMIT} ."
             }
         }
         
