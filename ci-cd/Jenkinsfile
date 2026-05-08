@@ -7,8 +7,9 @@ pipeline {
         IMAGE_REPO     = "php-ecommerce-app"
         ECR_URL        = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_REPO}"
     }
-    /*
+   
     stages {
+         /*
         stage('Pre-Build: PHP Linting') {
             steps {
                 sh "find ./app -name '*.php' -print0 | xargs -0 -n1 php -l"
