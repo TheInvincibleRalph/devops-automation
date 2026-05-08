@@ -38,7 +38,8 @@ module "jenkins" {
   
   iam_policy_arns = [
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser", 
-    "arn:aws:iam::aws:policy/AmazonSSMFullAccess"                  
+    "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
+    "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"                 
   ]
 
   user_data  = file("../../modules/compute/install_jenkins.sh")
