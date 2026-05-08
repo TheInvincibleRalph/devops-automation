@@ -2,10 +2,12 @@
 # 1. Update and install Java 21 (Required by the latest Jenkins)
 sudo dnf update -y
 sudo dnf install java-21-amazon-corretto-devel -y
+sudo dnf install java-21-amazon-corretto-devel git -y
 
 # 2. Add Jenkins Repo and Key
 sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
 sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
 
 # 3. Install and Start Jenkins
 sudo dnf install jenkins -y
