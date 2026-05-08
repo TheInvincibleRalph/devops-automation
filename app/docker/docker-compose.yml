@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  ecommercecache01:
+    image: memcached:alpine
+    restart: always
+    # No ports exposed to host.
+
+  ecommercemq01:
+    image: rabbitmq:3-management-alpine
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RMQ_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RMQ_PASS:-guest}
+
+  ecommerceapp:
+    # This image is now built from your php:8.2-apache Dockerfile
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/ecommerce-app:latest
+    container_name: ecommerceapp
+    restart: always
+    ports:
+      - "80:80" # Moved here! Apache is now handling the HTTP requests directly
+    depends_on:
+      - ecommercecache01
+      - ecommercemq01
