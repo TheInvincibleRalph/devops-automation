@@ -14,12 +14,11 @@ services:
       - RABBITMQ_DEFAULT_PASS=${RMQ_PASS:-guest}
 
   ecommerceapp:
-    # This image is now built from your php:8.2-apache Dockerfile
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/ecommerce-app:latest
     container_name: ecommerceapp
     restart: always
     ports:
-      - "80:80" # Moved here! Apache is now handling the HTTP requests directly
+      - "80:80"
     depends_on:
       - ecommercecache01
       - ecommercemq01
