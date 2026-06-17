@@ -11,5 +11,5 @@
 Email:    abhishekraj1298@gmail.com
 Password: password
 
-**Project Folder should not be changed from "Ecommerce-app-h" to others
+**Project Folder should not be changed from "Ecommerce-app" to others
 without making changes in the code**
