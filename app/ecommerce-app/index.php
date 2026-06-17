@@ -10,9 +10,9 @@ if(isset($_SESSION["uid"])){
 	<head>
 		<meta charset="UTF-8">
 		<title>Ecommerce</title>
-		<link rel="stylesheet" href="css/bootstrap.min.css"/>
-		<script src="js/jquery2.js"></script>
-		<script src="js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="bootstrap.min.css"/>
+		<script src="jquery2.js"></script>
+		<script src="bootstrap.min.js"></script>
 		<script src="main.js"></script>
 		<link rel="stylesheet" type="text/css" href="style.css">
 		<style></style>
