@@ -69,7 +69,9 @@ pipeline {
     post {
         always {
             sh "docker system prune -af"
-            docker rmi $(docker images -f "dangling=true" -q)
+            sh """
+                docker rmi \$(docker images -f "dangling=true" -q) || true
+            """
         }
         failure {
             echo "Pipeline failed! Check the console output above."
