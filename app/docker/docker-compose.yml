@@ -14,8 +14,8 @@ services:
       - RABBITMQ_DEFAULT_PASS=${RMQ_PASS:-guest}
 
   ecommerceapp:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/ecommerce-app:latest
-    container_name: ecommerceapp
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/php-ecommerce-app:latest
+    container_name: php-ecommerce-app
     restart: always
     ports:
       - "80:80"

@@ -63,6 +63,10 @@ module "app_ec2" {
     {
       port        = 80
       cidr_blocks = ["0.0.0.0/0"]
+    },
+    {
+      port        = 22
+      cidr_blocks = ["0.0.0.0/0"]
     }
   ]
 

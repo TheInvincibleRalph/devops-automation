@@ -9,12 +9,12 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-enable memcached amqp \
     && docker-php-ext-install mysqli pdo pdo_mysql
 
-COPY . .
+COPY ../../ecommerce-app/* /var/www/html/
 
 RUN chown -R www-data:www-data /var/www/html && \
     find /var/www/html -type d -exec chmod 755 {} \; && \
     find /var/www/html -type f -exec chmod 644 {} \;
-    
+
 EXPOSE 80
 
 CMD ["apache2-foreground"]
