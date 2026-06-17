@@ -59,6 +59,13 @@ module "app_ec2" {
   instance_type = "t3.small"
   key_name      = var.key_name
 
+  ingress_rules = [
+    {
+      port        = 80
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
+
   iam_policy_arns = [
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly", 
     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
@@ -127,7 +134,7 @@ resource "aws_ecr_repository" "app_repo" {
   image_scanning_configuration {
     scan_on_push = true
   }
-
+  force_delete         = true
   tags = {
     Name        = "php-ecommerce-app"
     Environment = "prod"
