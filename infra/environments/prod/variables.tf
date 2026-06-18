@@ -98,6 +98,19 @@ variable "db_sg_description" {
 variable "db_sg_ingress_rules" {
   description = "List of ingress rules for the database security group."
   type = list(object({
+    description        = string
+    from_port          = number
+    to_port            = number
+    protocol           = string
+    cidr_blocks        = list(string)
+    ipv6_cidr_blocks   = list(string)
+    security_group_ids = optional(list(string), [])
+  }))
+}
+
+variable "db_sg_egress_rules" {
+  description = "List of egress rules for the database security group."
+  type = list(object({
     description      = string
     from_port        = number
     to_port          = number
@@ -107,8 +120,30 @@ variable "db_sg_ingress_rules" {
   }))
 }
 
-variable "db_sg_egress_rules" {
-  description = "List of egress rules for the database security group."
+variable "jenkins_sg_name" {
+  description = "Name for the Jenkins security group."
+  type        = string
+}
+
+variable "jenkins_sg_description" {
+  description = "Description for the Jenkins security group."
+  type        = string
+}
+
+variable "jenkins_sg_ingress_rules" {
+  description = "List of ingress rules for the Jenkins security group."
+  type = list(object({
+    description      = string
+    from_port        = number
+    to_port          = number
+    protocol         = string
+    cidr_blocks      = list(string)
+    ipv6_cidr_blocks = list(string)
+  }))
+}
+
+variable "jenkins_sg_egress_rules" {
+  description = "List of egress rules for the Jenkins security group."
   type = list(object({
     description      = string
     from_port        = number
@@ -182,17 +217,26 @@ variable "db_ami_id" {
 }
 
 # DB Configuration
-variable "username_db" {
-  description = "PostgreSQL DB username."
+variable "db_username" {
+  description = "MySQL application database username."
   type        = string
-}
-variable "s3_bucket_name" {
-  description = "List of S3 bucket names (backup use)."
-  type        = list(string)
+  default     = "ecommerce_user"
 }
 
-variable "db_password" {
-  description = "The password for the PostgreSQL database"
+variable "db_database" {
+  description = "MySQL application database name."
+  type        = string
+  default     = "ecommerceapp"
+}
+
+variable "db_root_password" {
+  description = "MySQL root password on the database server."
+  type        = string
+  sensitive   = true
+}
+
+variable "app_db_password" {
+  description = "MySQL password for the application database user."
   type        = string
   sensitive   = true
 }

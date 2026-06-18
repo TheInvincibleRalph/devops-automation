@@ -27,7 +27,6 @@ output "private_route_table_id" {
   value = module.vpc.private_route_table_id
 }
 
-
 # EC2 Outputs
 output "app_instance_id" {
   description = "The ID of the application EC2 instance."
@@ -36,7 +35,7 @@ output "app_instance_id" {
 
 output "app_instance_public_ip" {
   description = "The public IP of the application EC2 instance."
-  value       = module.app_ec2.public_ip
+  value       = var.allocate_eip_app ? aws_eip.app[0].public_ip : module.app_ec2.public_ip
 }
 
 output "app_instance_private_ip" {
@@ -56,7 +55,7 @@ output "db_instance_private_ip" {
 
 output "app_live_url" {
   description = "Click this link to view the live eCommerce App"
-  value       = "http://${module.app_ec2.public_ip}"
+  value       = "http://${var.allocate_eip_app ? aws_eip.app[0].public_ip : module.app_ec2.public_ip}"
 }
 
 output "jenkins_url" {
