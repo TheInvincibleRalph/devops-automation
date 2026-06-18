@@ -1,18 +1,19 @@
 #!/bin/bash
-sudo yum update -y
-sudo yum install docker -y
+set -euo pipefail
+
+# Install Docker (Amazon Linux 2023)
+sudo dnf update -y
+sudo dnf install -y docker
 sudo systemctl enable docker
 sudo systemctl start docker
 
-# Create the environment file with the dynamic variables injected by Terraform
+# Environment file used by the app container at deploy time
 cat <<EOF > /etc/ecommerce.env
-DB_CONNECTION=pgsql
 DB_HOST=${db_endpoint}
-DB_PORT=5432
-DB_DATABASE=ecommerce
-DB_USERNAME=postgres
-DB_PASSWORD=${db_password} 
+DB_PORT=3306
+DB_DATABASE=${db_database}
+DB_USERNAME=${db_username}
+DB_PASSWORD=${app_db_password}
 EOF
 
-# Secure the file so only root can read it
 chmod 600 /etc/ecommerce.env

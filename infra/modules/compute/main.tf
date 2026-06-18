@@ -27,36 +27,13 @@ resource "aws_iam_instance_profile" "profile" {
   role = aws_iam_role.permission.name
 }
 
-resource "aws_security_group" "sg" {
-  name        = "${var.prefix_tag}-sg"
-  vpc_id      = var.vpc_id
-  description = "Security group for ${var.prefix_tag}"
-
-  dynamic "ingress" {
-    for_each = var.ingress_rules
-    content {
-      from_port   = ingress.value.port
-      to_port     = ingress.value.port
-      protocol    = "tcp"
-      cidr_blocks = ingress.value.cidr_blocks
-    }
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 # Compute Instance
 resource "aws_instance" "ec2" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
   subnet_id              = var.subnet_id
   key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.sg.id]
+  vpc_security_group_ids = var.security_group_ids
   iam_instance_profile   = aws_iam_instance_profile.profile.name
   user_data              = var.user_data
 
@@ -65,7 +42,7 @@ resource "aws_instance" "ec2" {
     volume_type = var.root_volume_type
   }
 
-  tags = {
+  tags = merge(var.tags, {
     Name = var.prefix_tag
-  }
+  })
 }

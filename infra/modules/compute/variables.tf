@@ -3,25 +3,20 @@ variable "prefix_tag" {
   type        = string
 }
 
-variable "vpc_id" {
-  description = "The ID of the VPC where the security group will be created"
-  type        = string
-}
-
 variable "subnet_id" {
   description = "The Subnet ID to launch the instance in"
   type        = string
 }
 
 variable "ami_id" {
-  description = "The AMI ID for the Jenkins server"
+  description = "The AMI ID for the EC2 instance"
   type        = string
 }
 
 variable "instance_type" {
   description = "The EC2 instance type"
   type        = string
-  default     = "t3.medium" 
+  default     = "t3.medium"
 }
 
 variable "key_name" {
@@ -42,12 +37,9 @@ variable "user_data" {
 variable "root_volume_size" { default = 20 }
 variable "root_volume_type" { default = "gp3" }
 
-variable "ingress_rules" {
-  type = list(object({
-    port        = number
-    cidr_blocks = list(string)
-  }))
-  default = []
+variable "security_group_ids" {
+  description = "Security group IDs to attach to the instance"
+  type        = list(string)
 }
 
 variable "tags" {
