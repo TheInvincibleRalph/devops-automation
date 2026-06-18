@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     environment {
         AWS_REGION     = "us-east-2"
         AWS_ACCOUNT_ID = "681504525746"
@@ -22,13 +22,13 @@ pipeline {
                 sh "docker build --pull -f ./app/docker/application/Dockerfile -t ${IMAGE_REPO}:${GIT_COMMIT} ."
             }
         }
-        
+
         stage('Security Scan') {
             steps {
                 sh "trivy image --severity HIGH,CRITICAL ${IMAGE_REPO}:${GIT_COMMIT}"
             }
         }
-        
+
         stage('Push to AWS ECR') {
             steps {
                 sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
@@ -38,40 +38,49 @@ pipeline {
                 sh "docker push ${ECR_URL}:latest"
             }
         }
-        
+
         stage('Deploy to App EC2 (via SSM)') {
             steps {
                 script {
-                    def INSTANCE_ID = sh(script: "aws ec2 describe-instances --region ${AWS_REGION} --filters 'Name=tag:Name,Values=web-app' 'Name=instance-state-name,Values=running' --query 'Reservations[0].Instances[0].InstanceId' --output text", returnStdout: true).trim()
+                    def INSTANCE_ID = sh(
+                        script: "aws ec2 describe-instances --region ${AWS_REGION} --filters 'Name=tag:Name,Values=web-app' 'Name=instance-state-name,Values=running' --query 'Reservations[0].Instances[0].InstanceId' --output text",
+                        returnStdout: true
+                    ).trim()
 
                     if (INSTANCE_ID == "None" || INSTANCE_ID == "") {
                         error "No running instance found with tag Name=web-app"
                     }
 
-                    sh """
-                    aws ssm send-command \
-                        --region ${AWS_REGION} \
-                        --instance-ids "${INSTANCE_ID}" \
-                        --document-name "AWS-RunShellScript" \
-                        --parameters 'commands=[
-                            "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com",
-                            "docker pull ${ECR_URL}:latest",
-                            "docker stop php-ecommerce-app || true",
-                            "docker rm php-ecommerce-app || true",
-                            "docker run -d --name php-ecommerce-app -p 80:80 ${ECR_URL}:latest"
-                        ]'
-                    """
+                    def COMMAND_ID = sh(
+                        script: """
+                        aws ssm send-command \
+                            --region ${AWS_REGION} \
+                            --instance-ids "${INSTANCE_ID}" \
+                            --document-name "AWS-RunShellScript" \
+                            --comment "Deploy php-ecommerce-app" \
+                            --parameters commands='[
+                                "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com",
+                                "docker pull ${ECR_URL}:latest",
+                                "docker stop php-ecommerce-app || true",
+                                "docker rm php-ecommerce-app || true",
+                                "docker run -d --name php-ecommerce-app --restart unless-stopped --network host --env-file /etc/ecommerce.env ${ECR_URL}:latest"
+                            ]' \
+                            --query "Command.CommandId" \
+                            --output text
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    sh "aws ssm wait command-executed --command-id ${COMMAND_ID} --instance-id ${INSTANCE_ID} --region ${AWS_REGION}"
                 }
             }
         }
-    } 
+    }
 
     post {
         always {
             sh "docker system prune -af"
-            sh """
-                docker rmi \$(docker images -f "dangling=true" -q) || true
-            """
+            sh 'docker rmi $(docker images -f "dangling=true" -q) || true'
         }
         failure {
             echo "Pipeline failed! Check the console output above."
@@ -79,5 +88,5 @@ pipeline {
         success {
             echo "Deployment successful! Your app should be live shortly."
         }
-    } 
+    }
 }
